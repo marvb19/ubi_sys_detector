@@ -13,7 +13,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Ubiquitous System Lab Application',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.indigo,
       ),
       home: const MyHomePage(title: 'Detector'),
     );
@@ -36,7 +36,7 @@ class _MyHomePageState extends State<MyHomePage> {
   //2: stair
   int _activity = 1;
 
-  void _incrementCounter() {
+  void _switchActivity() {
     setState(() {
       _activity= (_activity + 1) % 3;
     });
@@ -69,7 +69,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
+        onPressed: _switchActivity,
         tooltip: 'Increment',
         child: const Icon(Icons.cameraswitch),
       ), // This trailing comma makes auto-formatting nicer for build methods.
