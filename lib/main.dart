@@ -1,4 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_blue/flutter_blue.dart';
+//import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'dart:convert' show utf8;
 
 void main() {
   runApp(const MyApp());
@@ -53,6 +58,100 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  //BLE Stuff
+  final String SERVICE_UUID= "12345678-9abc-def0-1234-56789abcdef0";
+  final String CHARACTERISTIC_UUID = "12345678-9abc-def0-1234-56789abcdef1";
+  final String TARGET_DEVICE_NAME = "ESP32-BLE-Server";
+
+  FlutterBlue flutterBlue = FlutterBlue.instance;
+  late StreamSubscription<ScanResult> scanSubscription;
+
+  late BluetoothDevice targetDevice;
+  late BluetoothCharacteristic targetCharacteristic;
+
+  String connetionText = "";
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    startScan();
+  }
+
+  startScan(){
+  setState(() {
+    connetionText = "Start scanning";
+  });
+
+  scanSubscription = flutterBlue.scan().listen((scanResult){
+    if(scanResult.device.name == TARGET_DEVICE_NAME) {
+      print("DEVICE found");
+      stopScan();
+      setState(() {
+        connetionText = "Found Target Device";
+      });
+      targetDevice = scanResult.device;
+      //connectToDevice
+    }
+  }, onDone: () => stopScan());
+  }
+
+  stopScan(){
+    scanSubscription.cancel();
+    //scanSubscription = null;
+  }
+
+  connectToDevice() async{
+    if(targetDevice == null) return;
+
+    setState(() {
+      connetionText = "Device connecting";
+    });
+
+    await targetDevice.connect();
+    print("DEVICE CONNECTED");
+    setState(() {
+      connetionText = "Device Connected";
+    });
+    discoverServices();
+  }
+
+  disconnectFromDevice(){
+    if(targetDevice == null) return;
+
+    targetDevice.disconnect();
+    setState(() {
+      connetionText = "Device Disconnected";
+    });
+  }
+
+  discoverServices() async{
+    if(targetDevice == null) return;
+    
+    List<BluetoothService> services = await targetDevice.discoverServices();
+    services.forEach((service) {
+      //do something with services
+      if(service.uuid.toString() == SERVICE_UUID){
+        service.characteristics.forEach((characteristic) {
+          if(characteristic.uuid.toString() == CHARACTERISTIC_UUID){
+            targetCharacteristic = characteristic;
+            writeData("Hi there ESP32");
+            setState(() {
+              connetionText = "All Ready with ${targetDevice.name}";
+            });
+          }
+        });
+      }
+    });
+  }
+
+  writeData(String data) async{
+    if(targetCharacteristic == null) return;
+
+    List<int> bytes = utf8.encode(data);
+    await targetCharacteristic.write(bytes);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -65,11 +164,13 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             activityIndicator(),
+            Text(connetionText),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _switchActivity,
+        //onPressed: _switchActivity,
+        onPressed: startScan,
         tooltip: 'Increment',
         child: const Icon(Icons.cameraswitch),
       ), // This trailing comma makes auto-formatting nicer for build methods.
