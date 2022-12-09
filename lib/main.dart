@@ -30,13 +30,11 @@ class MyHomePage extends StatefulWidget {
 
   final String title;
 
-
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
   String ble_text = "";
 
   //0: other activity
@@ -46,28 +44,37 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _switchActivity() {
     setState(() {
-      _activity= (_activity + 1) % 3;
+      _activity = (_activity + 1) % 3;
     });
   }
 
-  Widget activityIndicator(){
-    switch(_activity){
+  Widget activityIndicator() {
+    switch (_activity) {
       case 1:
-        return const Icon(Icons.elevator, size: 350,);
+        return const Icon(
+          Icons.elevator,
+          size: 350,
+        );
       case 2:
-        return const Icon(Icons.stairs, size: 350,);
+        return const Icon(
+          Icons.stairs,
+          size: 350,
+        );
       default:
-        return const Icon(Icons.close, size: 350,);
+        return const Icon(
+          Icons.close,
+          size: 350,
+        );
     }
   }
 
   //BLE Stuff
-  final String SERVICE_UUID= "12345678-9abc-def0-1234-56789abcdef0";
+  final String SERVICE_UUID = "12345678-9abc-def0-1234-56789abcdef0";
   final String CHARACTERISTIC_UUID = "12345678-9abc-def0-1234-56789abcdef1";
   final String TARGET_DEVICE_NAME = "ESP32-BLE-Server";
 
   FlutterBlue flutterBlue = FlutterBlue.instance;
-  late StreamSubscription<ScanResult> scanSubscription;
+  late StreamSubscription<ScanResult>? scanSubscription;
 
   late BluetoothDevice targetDevice;
   late BluetoothCharacteristic targetCharacteristic;
@@ -81,31 +88,31 @@ class _MyHomePageState extends State<MyHomePage> {
     startScan();
   }
 
-  startScan(){
-  setState(() {
-    connetionText = "Start scanning";
-  });
+  startScan() {
+    setState(() {
+      connetionText = "Start scanning";
+    });
 
-  scanSubscription = flutterBlue.scan().listen((scanResult){
-    if(scanResult.device.name == TARGET_DEVICE_NAME) {
-      print("DEVICE found");
-      stopScan();
-      setState(() {
-        connetionText = "Found Target Device";
-      });
-      targetDevice = scanResult.device;
-      connectToDevice();
-    }
-  }, onDone: () => stopScan());
+    scanSubscription = flutterBlue.scan().listen((scanResult) {
+      if (scanResult.device.name == TARGET_DEVICE_NAME) {
+        print("DEVICE found");
+        stopScan();
+        setState(() {
+          connetionText = "Found Target Device";
+        });
+        targetDevice = scanResult.device;
+        connectToDevice();
+      }
+    }, onDone: () => stopScan());
   }
 
-  stopScan(){
-    scanSubscription.cancel();
-    //scanSubscription = null;
+  stopScan() {
+    scanSubscription?.cancel();
+    scanSubscription = null;
   }
 
-  connectToDevice() async{
-    if(targetDevice == null) return;
+  connectToDevice() async {
+    if (targetDevice == null) return;
 
     setState(() {
       connetionText = "Device connecting";
@@ -119,8 +126,8 @@ class _MyHomePageState extends State<MyHomePage> {
     discoverServices();
   }
 
-  disconnectFromDevice(){
-    if(targetDevice == null) return;
+  disconnectFromDevice() {
+    if (targetDevice == null) return;
 
     targetDevice.disconnect();
     setState(() {
@@ -128,15 +135,15 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  discoverServices() async{
-    if(targetDevice == null) return;
-    
+  discoverServices() async {
+    if (targetDevice == null) return;
+
     List<BluetoothService> services = await targetDevice.discoverServices();
     services.forEach((service) {
       //do something with services
-      if(service.uuid.toString() == SERVICE_UUID){
+      if (service.uuid.toString() == SERVICE_UUID) {
         service.characteristics.forEach((characteristic) {
-          if(characteristic.uuid.toString() == CHARACTERISTIC_UUID){
+          if (characteristic.uuid.toString() == CHARACTERISTIC_UUID) {
             targetCharacteristic = characteristic;
             //writeData("Hi there ESP32");
             setState(() {
@@ -148,23 +155,25 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  writeData(String data) async{
-    if(targetCharacteristic == null) return;
+  writeData(String data) async {
+    if (targetCharacteristic == null) return;
 
     List<int> bytes = utf8.encode(data);
     await targetCharacteristic.write(bytes);
   }
 
-  readData() async{
-    if(targetCharacteristic == null) return;
+  readData() async {
+    if (targetCharacteristic == null) return;
 
     List<int> value = await targetCharacteristic.read();
     print(utf8.decode(value));
-    ble_text = utf8.decode(value);
+    setState(() {
+      ble_text = utf8.decode(value);
+    });
   }
 
-  notifyData() async{
-    if(targetCharacteristic == null) return;
+  notifyData() async {
+    if (targetCharacteristic == null) return;
     await targetCharacteristic.setNotifyValue(true);
     targetCharacteristic.value.listen((value) {
       setState(() {
@@ -203,7 +212,6 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        //onPressed: _switchActivity,
         onPressed: _switchActivity,
         tooltip: 'Increment',
         child: const Icon(Icons.swap_horiz_sharp),
@@ -211,4 +219,3 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
-
