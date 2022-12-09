@@ -43,27 +43,29 @@ class _MyHomePageState extends State<MyHomePage> {
   int _activity = 1;
 
   void _switchActivity() {
-    setState(() {
-      _activity = (_activity + 1) % 3;
-    });
+    _activity = (_activity + 1) % 3;
   }
 
   Widget activityIndicator() {
+    const double iconSize = 350;
     switch (_activity) {
       case 1:
+        ble_text = "Lift";
         return const Icon(
           Icons.elevator,
-          size: 350,
+          size: iconSize,
         );
       case 2:
+        ble_text = "Stair";
         return const Icon(
           Icons.stairs,
-          size: 350,
+          size: iconSize,
         );
       default:
+        ble_text = "other activity";
         return const Icon(
           Icons.close,
-          size: 350,
+          size: iconSize,
         );
     }
   }
@@ -107,7 +109,9 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   stopScan() {
+    flutterBlue.stopScan();
     scanSubscription?.cancel();
+
     scanSubscription = null;
   }
 
@@ -130,6 +134,7 @@ class _MyHomePageState extends State<MyHomePage> {
     if (targetDevice == null) return;
 
     targetDevice.disconnect();
+
     setState(() {
       connetionText = "Device Disconnected";
     });
@@ -146,6 +151,7 @@ class _MyHomePageState extends State<MyHomePage> {
           if (characteristic.uuid.toString() == CHARACTERISTIC_UUID) {
             targetCharacteristic = characteristic;
             //writeData("Hi there ESP32");
+            notifyData();
             setState(() {
               connetionText = "All Ready with ${targetDevice.name}";
             });
@@ -155,9 +161,11 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  writeData(String data) async {
+  writeData() async {
     if (targetCharacteristic == null) return;
 
+    _switchActivity();
+    String data = _activity.toString();
     List<int> bytes = utf8.encode(data);
     await targetCharacteristic.write(bytes);
   }
@@ -167,9 +175,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
     List<int> value = await targetCharacteristic.read();
     print(utf8.decode(value));
-    setState(() {
-      ble_text = utf8.decode(value);
-    });
+    _switchActivity();
+    // setState(() {
+    //   ble_text = utf8.decode(value);
+    // });
   }
 
   notifyData() async {
@@ -178,9 +187,16 @@ class _MyHomePageState extends State<MyHomePage> {
     targetCharacteristic.value.listen((value) {
       setState(() {
         ble_text = utf8.decode(value);
+        _activity = int.parse(utf8.decode(value));
       });
     });
   }
+
+  //END of BLE Stuff
+
+  ButtonStyle buttonStyle = ElevatedButton.styleFrom(
+        fixedSize: Size(110, 30),
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -196,26 +212,54 @@ class _MyHomePageState extends State<MyHomePage> {
             activityIndicator(),
             Text(connetionText),
             Text(ble_text),
-            TextButton(
-              onPressed: readData,
-              child: const Text('Read'),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                  style: buttonStyle,
+                  onPressed: readData,
+                  child: const Text('Read'),
+                ),
+                ElevatedButton(
+                  style: buttonStyle,
+                  onPressed: () => writeData(),
+                  child: const Text('Write'),
+                ),
+                ElevatedButton(
+                  style: buttonStyle,
+                  onPressed: notifyData,
+                  child: const Text('Notify'),
+                ),
+              ],
             ),
-            TextButton(
-              onPressed: () => writeData(_activity.toString()),
-              child: const Text('Write'),
-            ),
-            TextButton(
-              onPressed: notifyData,
-              child: const Text('Notify'),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                  style: buttonStyle,
+                  onPressed: disconnectFromDevice,
+                  child: const Text('Disconnect'),
+                ),
+                ElevatedButton(
+                  style: buttonStyle,
+                  onPressed: stopScan,
+                  child: const Text('Stop'),
+                ),
+                ElevatedButton(
+                  style: buttonStyle,
+                  onPressed: startScan,
+                  child: const Text('Start'),
+                ),
+              ],
             ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _switchActivity,
-        tooltip: 'Increment',
-        child: const Icon(Icons.swap_horiz_sharp),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: _switchActivity,
+      //   tooltip: 'Increment',
+      //   child: const Icon(Icons.swap_horiz_sharp),
+      // ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
