@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_blue/flutter_blue.dart';
-//import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+//import 'package:flutter_blue/flutter_blue.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'dart:convert' show utf8;
 
 void main() {
@@ -86,9 +86,11 @@ class _MyHomePageState extends State<MyHomePage> {
   //BLE Stuff
   final String SERVICE_UUID = "12345678-9abc-def0-1234-56789abcdef0";
   final String CHARACTERISTIC_UUID = "12345678-9abc-def0-1234-56789abcdef1";
+  //final String SERVICE_UUID = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
+  //final String CHARACTERISTIC_UUID = "beb5483e-36e1-4688-b7f5-ea07361b26a8";
   final String TARGET_DEVICE_NAME = "ESP32-BLE-Server";
 
-  FlutterBlue flutterBlue = FlutterBlue.instance;
+  FlutterBluePlus flutterBlue = FlutterBluePlus.instance;
   late StreamSubscription<ScanResult>? scanSubscription;
 
   late BluetoothDevice targetDevice;
@@ -164,7 +166,7 @@ class _MyHomePageState extends State<MyHomePage> {
           if (characteristic.uuid.toString() == CHARACTERISTIC_UUID) {
             targetCharacteristic = characteristic;
             //writeData("Hi there ESP32");
-            notifyData();
+            //notifyData();
             setState(() {
               connetionText = "All Ready with ${targetDevice.name}";
             });
@@ -189,9 +191,10 @@ class _MyHomePageState extends State<MyHomePage> {
     List<int> value = await targetCharacteristic.read();
     print(utf8.decode(value));
     _switchActivity();
-    // setState(() {
-    //   ble_text = utf8.decode(value);
-    // });
+    setState(() {
+      ble_text = utf8.decode(value);
+      _activity = int.parse(utf8.decode(value));
+    });
   }
 
   notifyData() async {
@@ -221,7 +224,7 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text(widget.title),
         foregroundColor: Colors.black,
-          backgroundColor: Colors.blue,
+        backgroundColor: Colors.blue,
       ),
       //backgroundColor: Colors.white,
       body: Center(
