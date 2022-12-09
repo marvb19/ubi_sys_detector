@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_blue/flutter_blue.dart';
 //import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'dart:convert' show utf8;
@@ -207,26 +208,44 @@ class _MyHomePageState extends State<MyHomePage> {
   //END of BLE Stuff
 
   ButtonStyle buttonStyle = ElevatedButton.styleFrom(
-        fixedSize: Size(110, 30),
-        foregroundColor: Colors.blue
-      );
+      fixedSize: Size(105, 30),
+      foregroundColor: Colors.black,
+      backgroundColor: Colors.blue);
+
+  static const TextStyle textStyle =
+      TextStyle(color: Colors.blue, fontSize: 20);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
-        backgroundColor: Colors.blue,
+        foregroundColor: Colors.black,
+          backgroundColor: Colors.blue,
       ),
       //backgroundColor: Colors.white,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            activityIndicator(),
-            Text(connetionText),
-            Text(ble_text),
             Row(
+              //crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                activityIndicator(),
+              ],
+            ),
+            //Text(ble_text,style: textStyle),
+            Row(
+              //crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Text(connetionText, style: textStyle),
+              ],
+            ),
+            SizedBox(height: 30),
+            Row(
+              //crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 ElevatedButton(
@@ -247,6 +266,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ],
             ),
             Row(
+              //crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 ElevatedButton(
