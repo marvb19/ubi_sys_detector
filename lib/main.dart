@@ -163,16 +163,16 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            activityIndicator(),
             Text(connetionText),
+            activityIndicator(),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        //onPressed: _switchActivity,
-        onPressed: startScan,
+        onPressed: _switchActivity,
+        //onPressed: startScan,
         tooltip: 'Increment',
-        child: const Icon(Icons.cameraswitch),
+        child: const Icon(Icons.swap_horiz_sharp),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
