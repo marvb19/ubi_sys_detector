@@ -18,8 +18,15 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Ubiquitous System Lab Application',
       theme: ThemeData(
-        primarySwatch: Colors.indigo,
+        brightness: Brightness.light,
+        /* light theme settings */
       ),
+      darkTheme: ThemeData(
+        brightness: Brightness.dark,
+        /* dark theme settings */
+      ),
+      themeMode: ThemeMode.dark,
+      debugShowCheckedModeBanner: false,
       home: const MyHomePage(title: 'Detector'),
     );
   }
@@ -46,24 +53,29 @@ class _MyHomePageState extends State<MyHomePage> {
     _activity = (_activity + 1) % 3;
   }
 
+  static const Color iconColor = Colors.blue;
+
   Widget activityIndicator() {
-    const double iconSize = 350;
+    const double iconSize = 300;
     switch (_activity) {
       case 1:
         ble_text = "Lift";
         return const Icon(
+          color: iconColor,
           Icons.elevator,
           size: iconSize,
         );
       case 2:
         ble_text = "Stair";
         return const Icon(
+          color: iconColor,
           Icons.stairs,
           size: iconSize,
         );
       default:
         ble_text = "other activity";
         return const Icon(
+          color: iconColor,
           Icons.close,
           size: iconSize,
         );
@@ -196,6 +208,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   ButtonStyle buttonStyle = ElevatedButton.styleFrom(
         fixedSize: Size(110, 30),
+        foregroundColor: Colors.blue
       );
 
   @override
@@ -203,8 +216,9 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
+        backgroundColor: Colors.blue,
       ),
-      backgroundColor: Colors.white,
+      //backgroundColor: Colors.white,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
