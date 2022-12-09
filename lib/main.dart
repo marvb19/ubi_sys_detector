@@ -30,11 +30,14 @@ class MyHomePage extends StatefulWidget {
 
   final String title;
 
+
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+
+  String ble_text = "";
 
   //0: other activity
   //1: lift
@@ -91,7 +94,7 @@ class _MyHomePageState extends State<MyHomePage> {
         connetionText = "Found Target Device";
       });
       targetDevice = scanResult.device;
-      //connectToDevice
+      connectToDevice();
     }
   }, onDone: () => stopScan());
   }
@@ -135,7 +138,7 @@ class _MyHomePageState extends State<MyHomePage> {
         service.characteristics.forEach((characteristic) {
           if(characteristic.uuid.toString() == CHARACTERISTIC_UUID){
             targetCharacteristic = characteristic;
-            writeData("Hi there ESP32");
+            //writeData("Hi there ESP32");
             setState(() {
               connetionText = "All Ready with ${targetDevice.name}";
             });
@@ -152,6 +155,24 @@ class _MyHomePageState extends State<MyHomePage> {
     await targetCharacteristic.write(bytes);
   }
 
+  readData() async{
+    if(targetCharacteristic == null) return;
+
+    List<int> value = await targetCharacteristic.read();
+    print(utf8.decode(value));
+    ble_text = utf8.decode(value);
+  }
+
+  notifyData() async{
+    if(targetCharacteristic == null) return;
+    await targetCharacteristic.setNotifyValue(true);
+    targetCharacteristic.value.listen((value) {
+      setState(() {
+        ble_text = utf8.decode(value);
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -163,14 +184,27 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text(connetionText),
             activityIndicator(),
+            Text(connetionText),
+            Text(ble_text),
+            TextButton(
+              onPressed: readData,
+              child: const Text('Read'),
+            ),
+            TextButton(
+              onPressed: () => writeData(_activity.toString()),
+              child: const Text('Write'),
+            ),
+            TextButton(
+              onPressed: notifyData,
+              child: const Text('Notify'),
+            ),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
+        //onPressed: _switchActivity,
         onPressed: _switchActivity,
-        //onPressed: startScan,
         tooltip: 'Increment',
         child: const Icon(Icons.swap_horiz_sharp),
       ), // This trailing comma makes auto-formatting nicer for build methods.
