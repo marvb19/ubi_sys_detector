@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-//import 'package:flutter_blue/flutter_blue.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'dart:convert' show utf8;
 
@@ -48,11 +47,7 @@ class _MyHomePageState extends State<MyHomePage> {
   //0: other activity
   //1: lift
   //2: stair
-  int _activity = 1;
-
-  void _switchActivity() {
-    //_activity = (_activity + 1) % 3;
-  }
+  int _activity = 0;
 
   static const Color iconColor = Colors.blue;
 
@@ -86,8 +81,6 @@ class _MyHomePageState extends State<MyHomePage> {
   //BLE Stuff
   final String SERVICE_UUID = "12345678-9abc-def0-1234-56789abcdef0";
   final String CHARACTERISTIC_UUID = "12345678-9abc-def0-1234-56789abcdef1";
-  //final String SERVICE_UUID = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
-  //final String CHARACTERISTIC_UUID = "beb5483e-36e1-4688-b7f5-ea07361b26a8";
   final String TARGET_DEVICE_NAME = "ESP32-BLE-Server";
 
   FlutterBluePlus flutterBlue = FlutterBluePlus.instance;
@@ -105,11 +98,6 @@ class _MyHomePageState extends State<MyHomePage> {
     startScan();
   }
 
-  stopAndNotify(){
-    stopScan();
-    notifyData();
-  }
-
   startScan() {
     setState(() {
       connetionText = "Start scanning";
@@ -124,7 +112,6 @@ class _MyHomePageState extends State<MyHomePage> {
         });
         targetDevice = scanResult.device;
         connectToDevice();
-
       }
     }, onDone: () => stopScan());
   }
@@ -166,7 +153,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
     List<BluetoothService> services = await targetDevice.discoverServices();
     services.forEach((service) {
-      //do something with services
       if (service.uuid.toString() == SERVICE_UUID) {
         service.characteristics.forEach((characteristic) {
           if (characteristic.uuid.toString() == CHARACTERISTIC_UUID) {
@@ -185,7 +171,6 @@ class _MyHomePageState extends State<MyHomePage> {
   writeData() async {
     if (targetCharacteristic == null) return;
 
-    //_switchActivity();
     String data = _activity.toString();
     List<int> bytes = utf8.encode(data);
     await targetCharacteristic.write(bytes);
@@ -195,12 +180,10 @@ class _MyHomePageState extends State<MyHomePage> {
     if (targetCharacteristic == null) return;
 
     List<int> value = await targetCharacteristic.read();
-    //print(double.parse(utf8.decode(value));
-    //_switchActivity();
     setState(() {
       ble_text = utf8.decode(value);
-      //_activity = int.parse(utf8.decode(value));
-      _activity = int.parse(utf8.decode(value).replaceAll(RegExp(r'[^0-9]'),''));
+      _activity =
+          int.parse(utf8.decode(value).replaceAll(RegExp(r'[^0-9]'), ''));
       print(_activity);
     });
   }
@@ -210,10 +193,8 @@ class _MyHomePageState extends State<MyHomePage> {
     await targetCharacteristic.setNotifyValue(true);
     targetCharacteristic.value.listen((value) {
       setState(() {
-        //ble_text = utf8.decode(value);
-        //print("BLE_text: $ble_text\n");
-        _activity = int.parse(utf8.decode(value).replaceAll(RegExp(r'[^0-9]'),''));
-        //print("_activity: $_activity\n");
+        _activity =
+            int.parse(utf8.decode(value).replaceAll(RegExp(r'[^0-9]'), ''));
       });
     });
   }
@@ -236,7 +217,6 @@ class _MyHomePageState extends State<MyHomePage> {
         foregroundColor: Colors.black,
         backgroundColor: Colors.blue,
       ),
-      //backgroundColor: Colors.white,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -257,27 +237,6 @@ class _MyHomePageState extends State<MyHomePage> {
               ],
             ),
             SizedBox(height: 25),
-            // Row(
-            //   //crossAxisAlignment: CrossAxisAlignment.center,
-            //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            //   children: [
-            //     ElevatedButton(
-            //       style: buttonStyle,
-            //       onPressed: readData,
-            //       child: const Text('Read'),
-            //     ),
-            //     ElevatedButton(
-            //       style: buttonStyle,
-            //       onPressed: () => writeData(),
-            //       child: const Text('Write'),
-            //     ),
-            //     ElevatedButton(
-            //       style: buttonStyle,
-            //       onPressed: notifyData,
-            //       child: const Text('Notify'),
-            //     ),
-            //   ],
-            // ),
             Row(
               //crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -302,11 +261,6 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
       ),
-      // floatingActionButton: FloatingActionButton(
-      //   onPressed: _switchActivity,
-      //   tooltip: 'Increment',
-      //   child: const Icon(Icons.swap_horiz_sharp),
-      // ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
