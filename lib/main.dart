@@ -51,7 +51,7 @@ class _MyHomePageState extends State<MyHomePage> {
   int _activity = 1;
 
   void _switchActivity() {
-    _activity = (_activity + 1) % 3;
+    //_activity = (_activity + 1) % 3;
   }
 
   static const Color iconColor = Colors.blue;
@@ -105,6 +105,11 @@ class _MyHomePageState extends State<MyHomePage> {
     startScan();
   }
 
+  stopAndNotify(){
+    stopScan();
+    notifyData();
+  }
+
   startScan() {
     setState(() {
       connetionText = "Start scanning";
@@ -119,6 +124,7 @@ class _MyHomePageState extends State<MyHomePage> {
         });
         targetDevice = scanResult.device;
         connectToDevice();
+
       }
     }, onDone: () => stopScan());
   }
@@ -166,7 +172,7 @@ class _MyHomePageState extends State<MyHomePage> {
           if (characteristic.uuid.toString() == CHARACTERISTIC_UUID) {
             targetCharacteristic = characteristic;
             //writeData("Hi there ESP32");
-            //notifyData();
+            notifyData();
             setState(() {
               connetionText = "All Ready with ${targetDevice.name}";
             });
@@ -179,7 +185,7 @@ class _MyHomePageState extends State<MyHomePage> {
   writeData() async {
     if (targetCharacteristic == null) return;
 
-    _switchActivity();
+    //_switchActivity();
     String data = _activity.toString();
     List<int> bytes = utf8.encode(data);
     await targetCharacteristic.write(bytes);
@@ -189,11 +195,13 @@ class _MyHomePageState extends State<MyHomePage> {
     if (targetCharacteristic == null) return;
 
     List<int> value = await targetCharacteristic.read();
-    print(utf8.decode(value));
-    _switchActivity();
+    //print(double.parse(utf8.decode(value));
+    //_switchActivity();
     setState(() {
       ble_text = utf8.decode(value);
-      _activity = int.parse(utf8.decode(value));
+      //_activity = int.parse(utf8.decode(value));
+      _activity = int.parse(utf8.decode(value).replaceAll(RegExp(r'[^0-9]'),''));
+      print(_activity);
     });
   }
 
@@ -202,8 +210,10 @@ class _MyHomePageState extends State<MyHomePage> {
     await targetCharacteristic.setNotifyValue(true);
     targetCharacteristic.value.listen((value) {
       setState(() {
-        ble_text = utf8.decode(value);
-        _activity = int.parse(utf8.decode(value));
+        //ble_text = utf8.decode(value);
+        //print("BLE_text: $ble_text\n");
+        _activity = int.parse(utf8.decode(value).replaceAll(RegExp(r'[^0-9]'),''));
+        //print("_activity: $_activity\n");
       });
     });
   }
@@ -238,7 +248,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 activityIndicator(),
               ],
             ),
-            //Text(ble_text,style: textStyle),
+            SizedBox(height: 50),
             Row(
               //crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -246,28 +256,28 @@ class _MyHomePageState extends State<MyHomePage> {
                 Text(connetionText, style: textStyle),
               ],
             ),
-            SizedBox(height: 30),
-            Row(
-              //crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                  style: buttonStyle,
-                  onPressed: readData,
-                  child: const Text('Read'),
-                ),
-                ElevatedButton(
-                  style: buttonStyle,
-                  onPressed: () => writeData(),
-                  child: const Text('Write'),
-                ),
-                ElevatedButton(
-                  style: buttonStyle,
-                  onPressed: notifyData,
-                  child: const Text('Notify'),
-                ),
-              ],
-            ),
+            SizedBox(height: 25),
+            // Row(
+            //   //crossAxisAlignment: CrossAxisAlignment.center,
+            //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            //   children: [
+            //     ElevatedButton(
+            //       style: buttonStyle,
+            //       onPressed: readData,
+            //       child: const Text('Read'),
+            //     ),
+            //     ElevatedButton(
+            //       style: buttonStyle,
+            //       onPressed: () => writeData(),
+            //       child: const Text('Write'),
+            //     ),
+            //     ElevatedButton(
+            //       style: buttonStyle,
+            //       onPressed: notifyData,
+            //       child: const Text('Notify'),
+            //     ),
+            //   ],
+            // ),
             Row(
               //crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
