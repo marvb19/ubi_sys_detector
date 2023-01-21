@@ -23,6 +23,7 @@ class MyApp extends StatelessWidget {
       ),
       darkTheme: ThemeData(
         brightness: Brightness.dark,
+        primarySwatch: Colors.green
         /* dark theme settings */
       ),
       themeMode: ThemeMode.dark,
@@ -42,7 +43,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  String ble_text = "";
+  String bleText = "";
 
   //0: other activity
   //1: lift
@@ -52,24 +53,24 @@ class _MyHomePageState extends State<MyHomePage> {
   static const Color iconColor = Colors.blue;
 
   Widget activityIndicator() {
-    const double iconSize = 300;
+    const double iconSize = 350;
     switch (_activity) {
       case 1:
-        ble_text = "Lift";
+        bleText = "Lift";
         return const Icon(
           color: iconColor,
           Icons.elevator,
           size: iconSize,
         );
       case 2:
-        ble_text = "Stair";
+        bleText = "Stair";
         return const Icon(
           color: iconColor,
           Icons.stairs,
           size: iconSize,
         );
       default:
-        ble_text = "other activity";
+        bleText = "other activity";
         return const Icon(
           color: iconColor,
           Icons.close,
@@ -89,7 +90,7 @@ class _MyHomePageState extends State<MyHomePage> {
   late BluetoothDevice targetDevice;
   late BluetoothCharacteristic targetCharacteristic;
 
-  String connetionText = "";
+  String connectionStateText = "";
 
   @override
   void initState() {
@@ -100,15 +101,15 @@ class _MyHomePageState extends State<MyHomePage> {
 
   startScan() {
     setState(() {
-      connetionText = "Start scanning";
+      connectionStateText = "Start scanning";
     });
 
     scanSubscription = flutterBlue.scan().listen((scanResult) {
       if (scanResult.device.name == TARGET_DEVICE_NAME) {
-        print("DEVICE found");
+        //print("DEVICE found");
         stopScan();
         setState(() {
-          connetionText = "Found Target Device";
+          connectionStateText = "Found Target Device";
         });
         targetDevice = scanResult.device;
         connectToDevice();
@@ -127,13 +128,13 @@ class _MyHomePageState extends State<MyHomePage> {
     if (targetDevice == null) return;
 
     setState(() {
-      connetionText = "Device connecting";
+      connectionStateText = "Device connecting";
     });
 
     await targetDevice.connect();
     print("DEVICE CONNECTED");
     setState(() {
-      connetionText = "Device Connected";
+      connectionStateText = "Device Connected";
     });
     discoverServices();
   }
@@ -144,7 +145,7 @@ class _MyHomePageState extends State<MyHomePage> {
     targetDevice.disconnect();
 
     setState(() {
-      connetionText = "Device Disconnected";
+      connectionStateText = "Device Disconnected";
     });
   }
 
@@ -160,7 +161,7 @@ class _MyHomePageState extends State<MyHomePage> {
             //writeData("Hi there ESP32");
             notifyData();
             setState(() {
-              connetionText = "All Ready with ${targetDevice.name}";
+              connectionStateText = "All Ready with ${targetDevice.name}";
             });
           }
         });
@@ -181,7 +182,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     List<int> value = await targetCharacteristic.read();
     setState(() {
-      ble_text = utf8.decode(value);
+      bleText = utf8.decode(value);
       _activity =
           int.parse(utf8.decode(value).replaceAll(RegExp(r'[^0-9]'), ''));
       print(_activity);
@@ -228,15 +229,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 activityIndicator(),
               ],
             ),
-            SizedBox(height: 50),
-            Row(
-              //crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Text(connetionText, style: textStyle),
-              ],
-            ),
-            SizedBox(height: 25),
+            SizedBox(height: 80),
             Row(
               //crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -256,6 +249,14 @@ class _MyHomePageState extends State<MyHomePage> {
                   onPressed: startScan,
                   child: const Text('Start'),
                 ),
+              ],
+            ),
+            SizedBox(height: 25),
+            Row(
+              //crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Text(connectionStateText, style: textStyle),
               ],
             ),
           ],
